@@ -1,0 +1,484 @@
+@import "tailwindcss";
+
+@theme {
+  --color-palette-ivory: #FBF7F0;
+  --color-palette-cream: #EDF3E3;
+  --color-palette-sage: #CFE0B8;
+  --color-palette-moss: #8AA66B;
+  --color-palette-forest: #3F4A33;
+
+  /* Matrix Theme Colors */
+  --color-matrix-bg: #040906;
+  --color-matrix-card: #08150D;
+  --color-matrix-surface: #0C1E12;
+  --color-matrix-border: #00FF41;
+  --color-matrix-neon: #00FF41;
+  --color-matrix-lime: #39FF14;
+  --color-matrix-mint: #00FF66;
+  --color-matrix-text: #E0FFE5;
+  --color-matrix-dim: #98E8A8;
+}
+
+:root {
+  --palette-ivory: #FBF7F0;
+  --palette-cream: #EDF3E3;
+  --palette-sage: #CFE0B8;
+  --palette-moss: #8AA66B;
+  --palette-forest: #3F4A33;
+}
+
+/* Light Mode Defaults & Holiday Seasonal Overrides */
+body {
+  background-color: #FBF7F0;
+  color: #3F4A33;
+  transition: background-color 0.4s ease, color 0.3s ease;
+}
+
+body.theme-wet-season:not(.dark) {
+  background-color: #FBF7F0;
+  color: #3F4A33;
+}
+
+body.theme-halloween:not(.dark) {
+  background-color: #FDF8F3;
+  color: #431407;
+}
+
+body.theme-christmas-eve:not(.dark) {
+  background-color: #F6F9FD;
+  color: #1E293B;
+}
+
+body.theme-christmas:not(.dark) {
+  background-color: #FCF9F6;
+  color: #1C1917;
+}
+
+body.theme-new-year:not(.dark) {
+  background-color: #FCFAF6;
+  color: #1E1B4B;
+}
+
+/* Matrix Dark Mode Global Overrides */
+html.dark,
+html.matrix-theme,
+body.matrix-theme {
+  background-color: #040906 !important;
+  color: #D2FAD7;
+  color-scheme: dark;
+}
+
+/* Ensure simulated Outlook email preview canvas on desktop and mobile displays authentic high-contrast email colors on its white canvas */
+.outlook-body-wrapper,
+.outlook-saved-preview {
+  color: #000000 !important;
+  background-color: #FFFFFF !important;
+}
+.outlook-body-wrapper *:not([style*="color"]),
+.outlook-saved-preview *:not([style*="color"]) {
+  color: #000000;
+}
+
+/* Custom Keyframe Animations */
+@keyframes label-shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+@keyframes label-pulse-border {
+  0%, 100% { border-color: rgba(207, 224, 184, 0.4); }
+  50% { border-color: rgba(138, 166, 107, 0.9); box-shadow: 0 0 12px rgba(138, 166, 107, 0.25); }
+}
+
+@keyframes matrix-radar-pulse {
+  0%, 100% {
+    box-shadow: 0 0 10px rgba(0, 255, 65, 0.2), inset 0 0 15px rgba(0, 255, 65, 0.05);
+    border-color: rgba(0, 255, 65, 0.35);
+  }
+  50% {
+    box-shadow: 0 0 22px rgba(0, 255, 65, 0.5), inset 0 0 25px rgba(0, 255, 65, 0.12);
+    border-color: rgba(0, 255, 65, 0.85);
+  }
+}
+
+@keyframes matrix-glow-bounce {
+  0%, 100% { transform: translateY(0); filter: drop-shadow(0 0 6px rgba(0, 255, 65, 0.4)); }
+  50% { transform: translateY(-3px); filter: drop-shadow(0 0 14px rgba(0, 255, 65, 0.8)); }
+}
+
+@keyframes matrix-scanline {
+  0% { transform: translateY(-100%); }
+  100% { transform: translateY(1000%); }
+}
+
+/* Holiday Themes Keyframe Animations */
+@keyframes spider-swing {
+  0%, 100% { transform: rotate(15deg); }
+  50% { transform: rotate(-15deg); }
+}
+
+@keyframes ghost-float {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  33% { transform: translateY(-12px) rotate(3deg); }
+  66% { transform: translateY(-6px) rotate(-3deg); }
+}
+
+@keyframes ghost-sway {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(-10px, -15px) scale(1.05); }
+}
+
+@keyframes garland-sway {
+  0%, 100% { transform: rotate(-4deg); }
+  50% { transform: rotate(4deg); }
+}
+
+@keyframes snowman-bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+
+@keyframes tree-gentle {
+  0%, 100% { transform: translateY(0) scale(1); }
+  50% { transform: translateY(-4px) scale(1.02); }
+}
+
+@keyframes firework-pulse {
+  0%, 100% { transform: scale(1); filter: drop-shadow(0 0 8px rgba(245, 158, 11, 0.4)); }
+  50% { transform: scale(1.15); filter: drop-shadow(0 0 18px rgba(245, 158, 11, 0.9)); }
+}
+
+@keyframes newyear-bob {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+
+@keyframes spider-crawl {
+  0% { transform: translateX(0) translateY(0); }
+  25% { transform: translateX(15px) translateY(4px); }
+  50% { transform: translateX(30px) translateY(0); }
+  75% { transform: translateX(15px) translateY(-4px); }
+  100% { transform: translateX(0) translateY(0); }
+}
+
+@keyframes gift-bounce {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  35% { transform: translateY(-10px) rotate(-6deg); }
+  70% { transform: translateY(-4px) rotate(6deg); }
+}
+
+/* Wet Season Thunderstorm & Rain Keyframe Animations */
+@keyframes thunder-cloud-drift {
+  0%, 100% { transform: translateX(0) translateY(0); }
+  50% { transform: translateX(8px) translateY(-3px); }
+}
+
+@keyframes lightning-bolt-strike {
+  0% { opacity: 0; transform: scaleY(0.7); }
+  10% { opacity: 1; transform: scaleY(1); filter: drop-shadow(0 0 16px rgba(186, 230, 253, 0.95)); }
+  25% { opacity: 0.2; }
+  35% { opacity: 1; filter: drop-shadow(0 0 24px rgba(224, 242, 254, 1)); }
+  55% { opacity: 0.15; }
+  70% { opacity: 0.8; }
+  100% { opacity: 0; }
+}
+
+@keyframes raindrop-drip {
+  0% { transform: translateY(-10px); opacity: 0; }
+  20% { opacity: 0.9; }
+  85% { opacity: 0.9; }
+  100% { transform: translateY(40px); opacity: 0; }
+}
+
+@keyframes ripple-expand {
+  0% { transform: scale(0.2); opacity: 0.8; }
+  100% { transform: scale(2.2); opacity: 0; }
+}
+
+/* Futuristic Tab Transition Keyframes (Slower cinematic easing) */
+@keyframes quantum-warp-in {
+  0% {
+    opacity: 0;
+    transform: translateY(18px) scale(0.985);
+    filter: blur(6px) brightness(1.22);
+  }
+  40% {
+    opacity: 0.7;
+    transform: translateY(6px) scale(0.995);
+    filter: blur(2px) brightness(1.08);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    filter: blur(0px) brightness(1);
+  }
+}
+
+@keyframes laser-scanline-sweep {
+  0% {
+    top: -4%;
+    opacity: 0;
+  }
+  12% {
+    opacity: 1;
+  }
+  85% {
+    opacity: 0.95;
+  }
+  100% {
+    top: 104%;
+    opacity: 0;
+  }
+}
+
+/* Global Button Hover & Animation Rules */
+button {
+  transition: all 0.24s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.matrix-theme button:not(:disabled):hover {
+  filter: drop-shadow(0 0 8px rgba(0, 255, 65, 0.3));
+}
+
+/* Label Illusion utility class */
+.btn-label-ghost {
+  background-color: transparent !important;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.btn-label-ghost:hover {
+  transform: translateY(-2px);
+}
+
+.btn-label-ghost:active {
+  transform: translateY(0);
+}
+
+/* Underline reveal animation for label buttons */
+.btn-label-underline {
+  position: relative;
+  background-color: transparent !important;
+}
+
+.btn-label-underline::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  width: 0%;
+  height: 2px;
+  background-color: #8AA66B;
+  transition: all 0.25s ease-out;
+  transform: translateX(-50%);
+  border-radius: 9999px;
+}
+
+.matrix-theme .btn-label-underline::after {
+  background-color: #00FF41;
+  box-shadow: 0 0 8px #00FF41;
+}
+
+body.theme-wet-season:not(.dark) .btn-label-underline::after {
+  background-color: #8AA66B;
+  box-shadow: 0 0 8px rgba(138, 166, 107, 0.5);
+}
+
+body.theme-halloween:not(.dark) .btn-label-underline::after {
+  background-color: #EA580C;
+  box-shadow: 0 0 8px rgba(234, 88, 12, 0.5);
+}
+
+body.theme-christmas-eve:not(.dark) .btn-label-underline::after {
+  background-color: #F59E0B;
+  box-shadow: 0 0 8px rgba(245, 158, 11, 0.5);
+}
+
+body.theme-christmas:not(.dark) .btn-label-underline::after {
+  background-color: #DC2626;
+  box-shadow: 0 0 8px rgba(220, 38, 38, 0.5);
+}
+
+body.theme-new-year:not(.dark) .btn-label-underline::after {
+  background-color: #D97706;
+  box-shadow: 0 0 8px rgba(217, 119, 6, 0.5);
+}
+
+.btn-label-underline:hover::after {
+  width: 80%;
+}
+
+/* Matrix Neon Glow utilities */
+.matrix-border-glow {
+  border-color: rgba(0, 255, 65, 0.4) !important;
+  box-shadow: 0 0 12px rgba(0, 255, 65, 0.2);
+}
+
+.matrix-border-glow:hover {
+  border-color: rgba(0, 255, 65, 0.85) !important;
+  box-shadow: 0 0 20px rgba(0, 255, 65, 0.4);
+}
+
+.matrix-card {
+  background: rgba(8, 21, 13, 0.88);
+  border: 1px solid rgba(0, 255, 65, 0.25);
+  backdrop-filter: blur(12px);
+}
+
+.matrix-card:hover {
+  border-color: rgba(0, 255, 65, 0.55);
+  box-shadow: 0 0 20px rgba(0, 255, 65, 0.18);
+}
+
+/* Matrix Cyber Dropzone */
+.matrix-dropzone {
+  animation: matrix-radar-pulse 4s ease-in-out infinite;
+}
+
+/* Matrix Custom Scrollbars */
+.matrix-theme ::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.matrix-theme ::-webkit-scrollbar-track {
+  background: #040906;
+}
+
+.matrix-theme ::-webkit-scrollbar-thumb {
+  background: #0D2614;
+  border: 1px solid rgba(0, 255, 65, 0.3);
+  border-radius: 4px;
+}
+
+.matrix-theme ::-webkit-scrollbar-thumb:hover {
+  background: #00FF41;
+  box-shadow: 0 0 10px #00FF41;
+}
+
+/* Distinguishable Halloween Flying Bats Animations */
+@keyframes bat-fly-left-to-right {
+  0% {
+    transform: translate(-10vw, 8vh) scale(0.7) rotate(6deg);
+    opacity: 0;
+  }
+  5% {
+    opacity: 0.95;
+  }
+  25% {
+    transform: translate(25vw, 4vh) scale(0.9) rotate(-8deg);
+  }
+  50% {
+    transform: translate(52vw, 12vh) scale(1.05) rotate(10deg);
+  }
+  75% {
+    transform: translate(78vw, 6vh) scale(0.85) rotate(-6deg);
+  }
+  95% {
+    opacity: 0.95;
+  }
+  100% {
+    transform: translate(110vw, 15vh) scale(0.7) rotate(8deg);
+    opacity: 0;
+  }
+}
+
+@keyframes bat-fly-right-to-left {
+  0% {
+    transform: translate(110vw, 14vh) scale(0.8) scaleX(-1) rotate(6deg);
+    opacity: 0;
+  }
+  5% {
+    opacity: 0.95;
+  }
+  30% {
+    transform: translate(75vw, 6vh) scale(1) scaleX(-1) rotate(-8deg);
+  }
+  60% {
+    transform: translate(40vw, 16vh) scale(0.9) scaleX(-1) rotate(9deg);
+  }
+  85% {
+    transform: translate(15vw, 8vh) scale(0.8) scaleX(-1) rotate(-4deg);
+  }
+  95% {
+    opacity: 0.95;
+  }
+  100% {
+    transform: translate(-10vw, 18vh) scale(0.7) scaleX(-1) rotate(6deg);
+    opacity: 0;
+  }
+}
+
+@keyframes bat-fly-swoop {
+  0% {
+    transform: translate(105vw, 25vh) scale(0.65) scaleX(-1);
+    opacity: 0;
+  }
+  8% {
+    opacity: 0.9;
+  }
+  35% {
+    transform: translate(65vw, 32vh) scale(0.95) scaleX(-1) rotate(14deg);
+  }
+  65% {
+    transform: translate(30vw, 20vh) scale(1.1) scaleX(-1) rotate(-12deg);
+  }
+  92% {
+    opacity: 0.9;
+  }
+  100% {
+    transform: translate(-12vw, 28vh) scale(0.7) scaleX(-1);
+    opacity: 0;
+  }
+}
+
+@keyframes bat-wing-flap {
+  0%, 100% {
+    transform: scaleY(1);
+  }
+  50% {
+    transform: scaleY(0.2);
+  }
+}
+
+@keyframes spider-swing {
+  0%, 100% { transform: rotate(-9deg); }
+  50% { transform: rotate(9deg); }
+}
+
+@keyframes spider-crawl {
+  0% { transform: translateX(0); }
+  50% { transform: translateX(35px); }
+  100% { transform: translateX(0); }
+}
+
+@keyframes ghost-sway {
+  0%, 100% { transform: translateY(0) rotate(-2deg); }
+  50% { transform: translateY(-8px) rotate(2deg); }
+}
+
+@keyframes ghost-float {
+  0%, 100% { transform: translateY(0) scale(1); }
+  50% { transform: translateY(-16px) scale(1.03); }
+}
+
+@keyframes garland-sway {
+  0%, 100% { transform: rotate(-3deg); }
+  50% { transform: rotate(3deg); }
+}
+
+@keyframes gift-bounce {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50% { transform: translateY(-7px) rotate(-3deg); }
+}
+
+@keyframes snowman-bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-5px); }
+}
+
+@keyframes tree-gentle {
+  0%, 100% { transform: rotate(0deg); }
+  50% { transform: rotate(1deg); }
+}
