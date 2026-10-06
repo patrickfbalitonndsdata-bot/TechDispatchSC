@@ -28,6 +28,7 @@ export interface ProjectDetailSection {
   addOns: string;
   timeRange?: string;
   locations?: string;
+  excludedFromCount?: boolean;
 }
 
 export interface ScannedPdfData {
@@ -891,6 +892,18 @@ export function parseFieldsFromPdfText(
         }
       }
 
+      // Check if this part should not be counted for location count:
+      // - Explicit text: "do not count", "not counted", "exclude from count", "same locations", "concurrent", "simultaneous"
+      // - Or duplicate locations with an earlier section (e.g. same locations 1, 2, 3 or both say "All Locations")
+      const isExplicitlyExcluded = /(?:do\s*not\s*count|don'?t\s*count|not\s*counted|exclude\s*from\s*count|same\s*locations?|concurrent|simultaneous|overlap)/i.test(blockText);
+      const isDuplicateLocs = Boolean(
+        locations &&
+        detailSections.some(
+          (prev) => prev.locations && prev.locations.trim().toLowerCase() === locations.trim().toLowerCase()
+        )
+      );
+      const excludedFromCount = isExplicitlyExcluded || isDuplicateLocs;
+
       detailSections.push({
         count: effectiveCount,
         studyType: curr.studyType,
@@ -898,11 +911,15 @@ export function parseFieldsFromPdfText(
         addOns: blockAddOn,
         timeRange,
         locations,
+        excludedFromCount,
       });
     }
 
-    // Sum all location counts: e.g. 3 + 2 = 5
-    const totalCount = detailSections.reduce((sum, s) => sum + s.count, 0);
+    // Sum active location counts (exclude parts that should not be counted): e.g. 3 (Part 1 counted, Part 2 excluded)
+    const activeSections = detailSections.filter((s) => !s.excludedFromCount);
+    const totalCount = activeSections.length > 0
+      ? activeSections.reduce((sum, s) => sum + s.count, 0)
+      : (detailSections[0]?.count || 1);
     locationsCount = String(totalCount);
 
     // If detail sections only resolved 1 location (common when only "STUDY: Volume" was matched),
@@ -1771,7 +1788,7 @@ Yes`,
     urgency: "Priority Client",
     cityState: "Fort Collins, CO",
     region: "South Central",
-    locationsCount: "5",
+    locationsCount: "3",
     studyType: "ATR",
     studyLineRaw: "3 (48hr) ATR (2 day) & 2 (72hr) ATR (3 day)",
     addOns: "Volume, Speed/Volume, Classification, Speed",
@@ -1787,7 +1804,7 @@ URGENCY: Priority Client – Need to schedule today/next week.
 
 Region: South Central
 Project Number: 26-770125
-Location/s: 5
+Location/s: 3
 Study: ALG Volume, Speed/Volume, Classification, Speed`,
     emailBodyHtml: `
 <div style="font-family: Calibri, 'Segoe UI', Arial, sans-serif; font-size: 11pt; color: #000000; line-height: 1.5;">
@@ -1796,7 +1813,7 @@ Study: ALG Volume, Speed/Volume, Classification, Speed`,
   <p style="margin: 0 0 12px 0;"><span style="background-color: #FFFF00; color: #000000; font-weight: bold; padding: 0 4px; display: inline-block;">URGENCY: Priority Client – Need to schedule today/next week.</span></p>
   <p style="margin: 0 0 4px 0;"><strong>Region:</strong> South Central</p>
   <p style="margin: 0 0 4px 0;"><strong>Project Number:</strong> <strong>26-770125</strong></p>
-  <p style="margin: 0 0 4px 0;"><strong>Location/s:</strong> 5</p>
+  <p style="margin: 0 0 4px 0;"><strong>Location/s:</strong> 3</p>
   <p style="margin: 0 0 0 0;"><strong>Study:</strong> ALG Volume, Speed/Volume, Classification, Speed</p>
 </div>`.trim(),
     detailSections: [
@@ -1807,6 +1824,7 @@ Study: ALG Volume, Speed/Volume, Classification, Speed`,
         addOns: "Volume, Speed",
         timeRange: "00:00-24:00 | Tue, Wed | 09/15/26 - 09/16/26",
         locations: "1, 2, 3",
+        excludedFromCount: false,
       },
       {
         count: 2,
@@ -1815,6 +1833,7 @@ Study: ALG Volume, Speed/Volume, Classification, Speed`,
         addOns: "Volume, Classification, Speed",
         timeRange: "00:00-24:00 | Tue/Wed/Thu | 09/15/26 - 09/17/26",
         locations: "4, 5",
+        excludedFromCount: true,
       },
     ],
   },
