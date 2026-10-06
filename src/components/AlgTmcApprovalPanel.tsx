@@ -21,6 +21,7 @@ import {
   Plus,
   FileSignature,
   Eye,
+  X,
 } from "lucide-react";
 import {
   ScannedPdfData,
@@ -456,6 +457,66 @@ export const AlgTmcApprovalPanel: React.FC<AlgTmcApprovalPanelProps> = ({
     });
   };
 
+  const handleToggleSectionCount = (pdfIndex: number, secIndex: number) => {
+    setPdfList((prev) => {
+      const updated = [...prev];
+      if (!updated[pdfIndex]) return prev;
+      const current = { ...updated[pdfIndex] };
+      if (!current.detailSections || !current.detailSections[secIndex]) return prev;
+
+      // Clone detailSections array and toggle the specific section's excludedFromCount
+      const newSections = current.detailSections.map((sec, idx) => {
+        if (idx === secIndex) {
+          return {
+            ...sec,
+            excludedFromCount: !sec.excludedFromCount,
+          };
+        }
+        return { ...sec };
+      });
+      current.detailSections = newSections;
+
+      // Recalculate total locations from active (non-excluded) sections
+      const active = newSections.filter((s) => !s.excludedFromCount);
+      const newLocCount = active.length > 0
+        ? String(active.reduce((sum, s) => sum + s.count, 0))
+        : "0";
+      current.locationsCount = newLocCount;
+
+      const isTmc = current.studyType.toUpperCase().includes("TMC");
+      const urgencyLine = formatUrgencyLine(current.urgency, isTmc && scheduleOption === "today_next_week" ? "none" : scheduleOption);
+      if (isTmc) {
+        current.emailSubject = formatTmcSubject(current.projectNumber);
+        current.emailBodyText = `Hi James,\n\nPlease see TMC camera placement approval.\n\n${urgencyLine}\n\nProject Number: ${current.projectNumber}\nLocation/s: ${current.locationsCount}`;
+        current.emailBodyHtml = `
+<div style="font-family: Calibri, 'Segoe UI', Arial, sans-serif; font-size: 11pt; color: #000000; line-height: 1.5;">
+  <p style="margin: 0 0 12px 0;">Hi James,</p>
+  <p style="margin: 0 0 12px 0;">Please see TMC camera placement approval.</p>
+  <p style="margin: 0 0 12px 0;"><span style="background-color: #FFFF00; color: #000000; font-weight: bold; padding: 0 4px; display: inline-block;">${urgencyLine}</span></p>
+  <p style="margin: 0 0 4px 0;"><strong>Project Number:</strong> <strong>${current.projectNumber}</strong></p>
+  <p style="margin: 0 0 0 0;"><strong>Location/s:</strong> ${current.locationsCount}</p>
+</div>`.trim();
+      } else {
+        current.emailSubject = formatAtrSubject(current.projectNumber, current.addOns);
+        current.emailBodyText = `Hi Nina/Marisa,\n\nPlease see ALG conversion attached.\n\n${urgencyLine}\n\nRegion: ${current.region || "South Central"}\nProject Number: ${current.projectNumber}\nLocation/s: ${current.locationsCount}\nStudy: ${current.fullStudyFormatted}`;
+        current.emailBodyHtml = `
+<div style="font-family: Calibri, 'Segoe UI', Arial, sans-serif; font-size: 11pt; color: #000000; line-height: 1.5;">
+  <p style="margin: 0 0 12px 0;">Hi Nina/Marisa,</p>
+  <p style="margin: 0 0 12px 0;">Please see ALG conversion attached.</p>
+  <p style="margin: 0 0 12px 0;"><span style="background-color: #FFFF00; color: #000000; font-weight: bold; padding: 0 4px; display: inline-block;">${urgencyLine}</span></p>
+  <p style="margin: 0 0 4px 0;"><strong>Region:</strong> ${current.region || "South Central"}</p>
+  <p style="margin: 0 0 4px 0;"><strong>Project Number:</strong> <strong>${current.projectNumber}</strong></p>
+  <p style="margin: 0 0 4px 0;"><strong>Location/s:</strong> ${current.locationsCount}</p>
+  <p style="margin: 0 0 0 0;"><strong>Study:</strong> ${current.fullStudyFormatted}</p>
+</div>`.trim();
+      }
+
+      updated[pdfIndex] = current;
+      if (onScannedDataChange) onScannedDataChange(updated);
+      return updated;
+    });
+  };
+
   const handleCopySubject = async (subjectText: string, tag: string) => {
     try {
       await navigator.clipboard.writeText(subjectText);
@@ -717,7 +778,7 @@ export const AlgTmcApprovalPanel: React.FC<AlgTmcApprovalPanelProps> = ({
                 ? "bg-amber-50 hover:bg-amber-100 text-amber-900 border-amber-300"
                 : "bg-[#EDF3E3] hover:bg-[#CFE0B8] text-[#3F4A33] border-[#CFE0B8]"
             }`}
-            title="Load Multi-Detail ATR (3 + 2 = 5 Locations, joined Add-ons with '/')"
+            title="Load Multi-Detail ATR (Part 2 excluded: 3 Locations counted, Part 2 add-ons joined)"
           >
             <Layers
               className={`w-3 h-3 ${
@@ -734,7 +795,7 @@ export const AlgTmcApprovalPanel: React.FC<AlgTmcApprovalPanelProps> = ({
                   : "text-[#8AA66B]"
               }`}
             />
-            <span>Multi-Detail ATR (3+2 Locs)</span>
+            <span>Multi-Detail ATR (3 Locs, Part 2 Excluded)</span>
           </button>
           <button
             type="button"
@@ -1601,7 +1662,7 @@ export const AlgTmcApprovalPanel: React.FC<AlgTmcApprovalPanelProps> = ({
                         <span>Location/s Count</span>
                         {pdf.detailSections && pdf.detailSections.length > 1 && (
                           <span className={`text-[9px] font-semibold ${isDarkMode ? "text-[#00FF41]" : "text-[#8AA66B]"}`}>
-                            Total: {pdf.detailSections.map((s) => s.count).join(" + ")}
+                            Counted: {pdf.detailSections.filter((s) => !s.excludedFromCount).map((s) => s.count).join(" + ") || "0"} = {pdf.locationsCount}
                           </span>
                         )}
                       </label>
@@ -1609,13 +1670,52 @@ export const AlgTmcApprovalPanel: React.FC<AlgTmcApprovalPanelProps> = ({
                         type="text"
                         value={pdf.locationsCount}
                         onChange={(e) => handleUpdatePdfField(idx, "locationsCount", e.target.value)}
-                        placeholder="e.g. 5"
+                        placeholder="e.g. 3"
                         className={`w-full rounded px-2 py-1 text-xs font-semibold border focus:outline-hidden ${
                           isDarkMode
                             ? "bg-[#040906] border-[#00FF41]/40 text-[#00FF41] focus:ring-1 focus:ring-[#00FF41]"
                             : "bg-white border-[#CFE0B8] focus:border-[#8AA66B] text-[#3F4A33]"
                         }`}
                       />
+                      {pdf.detailSections && pdf.detailSections.length > 1 && (
+                        <div className="mt-1.5 space-y-1">
+                          <span className="text-[9px] font-semibold opacity-75 block">Include / Exclude Parts in Location Count:</span>
+                          {pdf.detailSections.map((sec, sIdx) => (
+                            <label
+                              key={sIdx}
+                              className={`flex items-center justify-between px-2 py-1 rounded border text-[10px] cursor-pointer transition-colors ${
+                                sec.excludedFromCount
+                                  ? isDarkMode
+                                    ? "bg-red-950/20 border-red-500/40 text-red-300"
+                                    : "bg-red-50 border-red-200 text-red-800"
+                                  : isDarkMode
+                                    ? "bg-[#040906] border-[#00FF41]/30 text-[#D2FAD7]"
+                                    : "bg-white border-[#CFE0B8] text-[#3F4A33]"
+                              }`}
+                            >
+                              <span className="flex items-center gap-1.5">
+                                <input
+                                  type="checkbox"
+                                  checked={!sec.excludedFromCount}
+                                  onChange={() => handleToggleSectionCount(idx, sIdx)}
+                                  className="rounded text-emerald-600 focus:ring-0"
+                                />
+                                <span className="font-bold">Part {sIdx + 1}:</span>
+                                <span className={sec.excludedFromCount ? "line-through opacity-60" : "font-mono"}>
+                                  {sec.count} loc ({sec.rawLine})
+                                </span>
+                              </span>
+                              <span className={`text-[9px] font-bold px-1.5 py-0.2 rounded ${
+                                sec.excludedFromCount
+                                  ? "bg-red-500/20 text-red-600 dark:text-red-400"
+                                  : "bg-emerald-500/20 text-emerald-700 dark:text-emerald-400"
+                              }`}>
+                                {sec.excludedFromCount ? "Not Counted" : "Counted"}
+                              </span>
+                            </label>
+                          ))}
+                        </div>
+                      )}
                     </div>
 
                     <div>
@@ -2337,7 +2437,14 @@ export const AlgTmcApprovalPanel: React.FC<AlgTmcApprovalPanelProps> = ({
                                 }`}
                               >
                                 <Layers className={`w-2.5 h-2.5 ${isDarkMode ? "text-[#00FF41]" : ""}`} />
-                                Sum of {activeSinglePdf.detailSections.length} sections ({activeSinglePdf.detailSections.map((s) => s.count).join(" + ")} = {activeSinglePdf.locationsCount})
+                                {(() => {
+                                  const active = activeSinglePdf.detailSections.filter((s) => !s.excludedFromCount);
+                                  const excluded = activeSinglePdf.detailSections.filter((s) => s.excludedFromCount);
+                                  if (excluded.length > 0) {
+                                    return `Counted: ${active.map((s) => s.count).join(" + ") || "0"} = ${activeSinglePdf.locationsCount} (${excluded.length} part excluded)`;
+                                  }
+                                  return `Sum of ${activeSinglePdf.detailSections.length} sections (${activeSinglePdf.detailSections.map((s) => s.count).join(" + ")} = ${activeSinglePdf.locationsCount})`;
+                                })()}
                               </span>
                             )}
                           </div>
@@ -2358,43 +2465,100 @@ export const AlgTmcApprovalPanel: React.FC<AlgTmcApprovalPanelProps> = ({
                             >
                               <span className="flex items-center gap-1">
                                 <Layers className={`w-3 h-3 ${isDarkMode ? "text-[#00FF41]" : "text-[#8AA66B]"}`} />
-                                <span>{activeSinglePdf.detailSections.length} Project Detail Sections Detected</span>
+                                <span>{activeSinglePdf.detailSections.length} Project Detail Sections</span>
                               </span>
-                              <span
-                                className={`text-[10px] border px-1.5 py-0.5 rounded font-mono font-bold ${
-                                  isDarkMode
-                                    ? "bg-[#08150D] text-[#00FF41] border-[#00FF41]/40"
-                                    : "bg-white text-[#3F4A33] border-[#CFE0B8]"
-                                }`}
-                              >
-                                Total: {activeSinglePdf.locationsCount}
-                              </span>
-                            </div>
-                            <div className="space-y-1">
-                              {activeSinglePdf.detailSections.map((sec, secIdx) => (
-                                <div
-                                  key={secIdx}
-                                  className={`border rounded px-2 py-1 flex items-center justify-between text-[11px] ${
+                              <div className="flex items-center gap-1.5">
+                                {activeSinglePdf.detailSections.some((s) => s.excludedFromCount) && (
+                                  <span className="text-[9px] font-semibold px-1.5 py-0.5 rounded bg-red-500/15 text-red-600 dark:text-red-400 border border-red-500/30">
+                                    {activeSinglePdf.detailSections.filter((s) => s.excludedFromCount).length} Part Excluded
+                                  </span>
+                                )}
+                                <span
+                                  className={`text-[10px] border px-1.5 py-0.5 rounded font-mono font-bold ${
                                     isDarkMode
-                                      ? "bg-[#06120A] border-[#00FF41]/30 text-[#D2FAD7]"
-                                      : "bg-white border-[#CFE0B8] text-[#3F4A33]"
+                                      ? "bg-[#08150D] text-[#00FF41] border-[#00FF41]/40"
+                                      : "bg-white text-[#3F4A33] border-[#CFE0B8]"
                                   }`}
                                 >
-                                  <div>
-                                    <span className={`font-bold ${isDarkMode ? "text-[#00FF41]" : "text-[#3F4A33]"}`}>
-                                      Part {secIdx + 1}:
-                                    </span>{" "}
-                                    <span className="font-mono font-semibold">{sec.count} loc ({sec.rawLine})</span>
-                                  </div>
+                                  Total: {activeSinglePdf.locationsCount}
+                                </span>
+                              </div>
+                            </div>
+                            <div className="space-y-1.5">
+                              {activeSinglePdf.detailSections.map((sec, secIdx) => {
+                                const currentPdfIdx = typeof activeTab === "number" ? activeTab : 0;
+                                return (
                                   <div
-                                    className={`text-[10px] font-semibold ${
-                                      isDarkMode ? "text-[#00FF41]" : "text-[#8AA66B]"
+                                    key={secIdx}
+                                    className={`border rounded px-2 py-1.5 flex items-center justify-between gap-2 text-[11px] transition-colors ${
+                                      sec.excludedFromCount
+                                        ? isDarkMode
+                                          ? "bg-red-950/20 border-red-500/40 text-red-300"
+                                          : "bg-red-50/80 border-red-200 text-red-900"
+                                        : isDarkMode
+                                          ? "bg-[#06120A] border-[#00FF41]/30 text-[#D2FAD7]"
+                                          : "bg-white border-[#CFE0B8] text-[#3F4A33]"
                                     }`}
                                   >
-                                    w/ {sec.addOns || "Volume"}
+                                    <div className="flex items-center gap-2 flex-wrap">
+                                      <span className={`font-bold ${
+                                        sec.excludedFromCount
+                                          ? "text-red-600 dark:text-red-400"
+                                          : isDarkMode ? "text-[#00FF41]" : "text-[#3F4A33]"
+                                      }`}>
+                                        Part {secIdx + 1}:
+                                      </span>
+                                      <span className={`font-mono font-semibold ${sec.excludedFromCount ? "line-through opacity-60 text-red-400 dark:text-red-300" : ""}`}>
+                                        {sec.count} loc ({sec.rawLine})
+                                      </span>
+                                      {sec.excludedFromCount ? (
+                                        <span className="bg-red-500/20 text-red-600 dark:text-red-400 border border-red-500/40 text-[9px] font-bold px-1.5 py-0.5 rounded-full uppercase tracking-wider">
+                                          Not Counted (0 loc)
+                                        </span>
+                                      ) : (
+                                        <span className="bg-emerald-500/20 text-emerald-700 dark:text-emerald-400 border border-emerald-500/40 text-[9px] font-bold px-1.5 py-0.5 rounded-full uppercase tracking-wider">
+                                          Counted ({sec.count} loc)
+                                        </span>
+                                      )}
+                                      <span
+                                        className={`text-[10px] font-semibold hidden md:inline ${
+                                          sec.excludedFromCount
+                                            ? "opacity-60"
+                                            : isDarkMode ? "text-[#00FF41]/80" : "text-[#8AA66B]"
+                                        }`}
+                                      >
+                                        w/ {sec.addOns || "Volume"}
+                                      </span>
+                                    </div>
+                                    <button
+                                      type="button"
+                                      onClick={() => handleToggleSectionCount(currentPdfIdx, secIdx)}
+                                      title={sec.excludedFromCount ? "Include this part in total location count" : "Do not count this part for location count"}
+                                      className={`shrink-0 text-[10px] font-bold px-2 py-0.5 rounded border transition cursor-pointer flex items-center gap-1 ${
+                                        sec.excludedFromCount
+                                          ? isDarkMode
+                                            ? "bg-[#00FF41]/20 hover:bg-[#00FF41]/30 text-[#00FF41] border-[#00FF41]/50"
+                                            : "bg-emerald-100 hover:bg-emerald-200 text-emerald-800 border-emerald-300"
+                                          : isDarkMode
+                                            ? "bg-red-950/60 hover:bg-red-900/80 text-red-300 border-red-500/50"
+                                            : "bg-red-50 hover:bg-red-100 text-red-700 border-red-300"
+                                      }`}
+                                    >
+                                      {sec.excludedFromCount ? (
+                                        <>
+                                          <Check className="w-2.5 h-2.5" />
+                                          <span>Count Part</span>
+                                        </>
+                                      ) : (
+                                        <>
+                                          <X className="w-2.5 h-2.5" />
+                                          <span>Do Not Count</span>
+                                        </>
+                                      )}
+                                    </button>
                                   </div>
-                                </div>
-                              ))}
+                                );
+                              })}
                             </div>
                           </div>
                         )}
