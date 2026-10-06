@@ -92,6 +92,11 @@ export const HARDCODED_TECHNICIAN_ROSTER: TechnicianDirectoryEntry[] = [
     aliases: ["Julian Chihuahua", "Chihuahua, Julian", "Julian, Chihuahua", "Chihuahua Julian", "Julian"],
     airtableLink: "https://airtable.com/appvNeYuPd12aTmxS/shrGbAmC3YHmPDIyD",
   },
+  {
+    name: "Frederrick Harrison",
+    aliases: ["Frederrick Harrison", "Harrison, Frederrick", "Frederrick, Harrison", "Harrison Frederrick", "Frederrick"],
+    airtableLink: "https://airtable.com/appvNeYuPd12aTmxS/shrrI2w0cJ1yCUIku/tblr3T3GCLPM1hYo5",
+  },
 ];
 
 /**
