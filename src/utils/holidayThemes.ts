@@ -39,19 +39,19 @@ export interface HolidayThemeConfig {
 
 /**
  * Determines current holiday season based on specific calendar date rules:
- * - Halloween: October 30 - November 30
+ * - Halloween: October 20 - November 30
  * - Christmas Eve: December 22 - 24
  * - Christmas: Whole December excluding 22-24
  * - New Year: January 1 - 15
- * - Wet Season: August 1 - October 29 (excluding October 30 onwards for Halloween)
+ * - Wet Season: August 1 - October 19 (excluding October 20 onwards for Halloween)
  * - Standard: All other dates
  */
 export function detectHolidaySeason(date: Date = new Date()): HolidaySeasonId {
   const month = date.getMonth(); // 0 = Jan, 7 = Aug, 8 = Sep, 9 = Oct, 10 = Nov, 11 = Dec
   const day = date.getDate();
 
-  // 1. Halloween: Oct 30 - Nov 30
-  if ((month === 9 && day >= 30) || (month === 10 && day <= 30)) {
+  // 1. Halloween: Oct 20 - Nov 30
+  if ((month === 9 && day >= 20) || (month === 10 && day <= 30)) {
     return "halloween";
   }
 
@@ -70,8 +70,8 @@ export function detectHolidaySeason(date: Date = new Date()): HolidaySeasonId {
     return "new_year";
   }
 
-  // 5. Wet Season: August 1 - October 29 (exclude October 30 onwards for Halloween)
-  if (month === 7 || month === 8 || (month === 9 && day < 30)) {
+  // 5. Wet Season: August 1 - October 19 (exclude October 20 onwards for Halloween)
+  if (month === 7 || month === 8 || (month === 9 && day < 20)) {
     return "wet_season";
   }
 
@@ -112,7 +112,7 @@ export const HOLIDAY_CONFIGS: Record<HolidaySeasonId, HolidayThemeConfig> = {
     name: "Wet Season",
     emoji: "⛈️",
     badgeLabel: "Wet Season (Rain & Lightning)",
-    dateRangeText: "Aug 1 – Oct 29",
+    dateRangeText: "Aug 1 – Oct 19",
     description: "Standard South Central palette with rainfall, raindrops, and thunderstorm lightning",
     backgroundImage: wetSeasonBg,
     themeClass: "theme-wet-season",
@@ -140,7 +140,7 @@ export const HOLIDAY_CONFIGS: Record<HolidaySeasonId, HolidayThemeConfig> = {
     name: "Halloween",
     emoji: "🎃",
     badgeLabel: "Halloween Season",
-    dateRangeText: "Oct 30 – Nov 30",
+    dateRangeText: "Oct 20 – Nov 30",
     description: "Spooky pumpkin orange, midnight plum & drifting autumn leaves",
     backgroundImage: halloweenBg,
     themeClass: "theme-halloween",
