@@ -1,6 +1,6 @@
 import halloweenBg from "../assets/images/haunted_castle_cemetery_bg_1790950203881.jpg";
 import xmasEveBg from "../assets/images/xmas_eve_bg_1790863368702.jpg";
-import christmasBg from "../assets/images/christmas_light_bg_1790863381002.jpg";
+import christmasBg from "../assets/images/christmas_fireplace_bg_1791564094875.jpg";
 import newYearBg from "../assets/images/new_year_bg_1790863394137.jpg";
 import wetSeasonBg from "../assets/images/wet_season_bg_1791305549083.jpg";
 
@@ -197,7 +197,7 @@ export const HOLIDAY_CONFIGS: Record<HolidaySeasonId, HolidayThemeConfig> = {
     emoji: "🎄",
     badgeLabel: "Christmas Holiday",
     dateRangeText: "Dec 1 – Dec 31 (excl. 22-24)",
-    description: "Festive crimson red, pine evergreen & joyful drifting snowflakes",
+    description: "Cozy warm fireplace, illuminated Christmas tree, wrapped gifts & festive snowflakes",
     backgroundImage: christmasBg,
     themeClass: "theme-christmas",
     colors: {
